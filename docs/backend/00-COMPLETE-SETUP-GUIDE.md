@@ -375,6 +375,35 @@ Azure AD B2C = Enterprise authentication (like "Login with Microsoft")
 - Verify password in appsettings.json
 - Check port 5432 is not blocked
 
+### "Method 'Identifier' does not have an implementation" error
+**Cause:** EF Core package version mismatch
+
+**Solution:**
+```bash
+# 1. Check current EF Core versions
+cd src/GroupBuy.Infrastructure
+dotnet list package | grep EntityFrameworkCore
+
+# 2. Remove all EF Core packages
+dotnet remove package Microsoft.EntityFrameworkCore
+dotnet remove package Microsoft.EntityFrameworkCore.Design
+dotnet remove package Npgsql.EntityFrameworkCore.PostgreSQL
+
+# 3. Add them back with same version (8.0.0 or latest 8.x)
+dotnet add package Microsoft.EntityFrameworkCore --version 8.0.0
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 8.0.0
+
+# 4. Also update in API project
+cd ../GroupBuy.API
+dotnet remove package Microsoft.EntityFrameworkCore.Design
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.0
+
+# 5. Clean and restore
+dotnet clean
+dotnet restore
+```
+
 ### "Unable to create DbContext" error
 **Solution:** Create `DesignTimeDbContextFactory.cs` in `src/GroupBuy.Infrastructure/Data/`:
 - This file is in `07-INFRASTRUCTURE-LAYER-DATABASE.md`
