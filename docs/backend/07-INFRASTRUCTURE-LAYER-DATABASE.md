@@ -362,6 +362,52 @@ public static class DbInitializer
 
 ---
 
+## File: `src/GroupBuy.Infrastructure/Data/DesignTimeDbContextFactory.cs` ⚠️ REQUIRED
+
+**This file is REQUIRED for migrations to work!**
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+
+namespace GroupBuy.Infrastructure.Data;
+
+/// <summary>
+/// This factory allows EF Core tools to create DbContext at design time (for migrations).
+/// It reads the connection string from appsettings.json in the API project.
+/// </summary>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<GroupBuyDbContext>
+{
+    public GroupBuyDbContext CreateDbContext(string[] args)
+    {
+        // Build configuration from API project's appsettings.json
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../GroupBuy.API"))
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        // Get connection string
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException(
+                "Connection string 'DefaultConnection' not found in appsettings.json. " +
+                "Make sure appsettings.json exists in GroupBuy.API project.");
+        }
+
+        // Build DbContext options
+        var optionsBuilder = new DbContextOptionsBuilder<GroupBuyDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+
+        return new GroupBuyDbContext(optionsBuilder.Options);
+    }
+}
+```
+
+---
+
 ## Creating Migrations
 
 ### Initial Migration

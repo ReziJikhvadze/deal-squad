@@ -136,6 +136,7 @@ Open each documentation file and copy the code:
 4. `05-APPLICATION-LAYER-CQRS.md` → Copy to `src/GroupBuy.Application/Commands/` and `Queries/`
 5. `06-APPLICATION-LAYER-VALIDATORS.md` → Copy to `src/GroupBuy.Application/Validators/`
 6. `07-INFRASTRUCTURE-LAYER-DATABASE.md` → Copy to `src/GroupBuy.Infrastructure/Data/`
+   - **⚠️ IMPORTANT:** Must include `DesignTimeDbContextFactory.cs` (required for migrations)
 7. `08-INFRASTRUCTURE-LAYER-PAYMENTS.md` → Copy to `src/GroupBuy.Infrastructure/Payments/`
 8. `09-INFRASTRUCTURE-SERVICES.md` → Copy to `src/GroupBuy.Infrastructure/Services/`
 9. `10-API-LAYER-SETUP.md` → Update `src/GroupBuy.API/Program.cs`
@@ -373,6 +374,12 @@ Azure AD B2C = Enterprise authentication (like "Login with Microsoft")
 - Check PostgreSQL is running
 - Verify password in appsettings.json
 - Check port 5432 is not blocked
+
+### "Unable to create DbContext" error
+**Solution:** Create `DesignTimeDbContextFactory.cs` in `src/GroupBuy.Infrastructure/Data/`:
+- This file is in `07-INFRASTRUCTURE-LAYER-DATABASE.md`
+- Copy the entire `DesignTimeDbContextFactory.cs` code
+- It reads connection string from `appsettings.json` at design time
 
 ### "Migration failed"
 - Delete `Migrations` folder
