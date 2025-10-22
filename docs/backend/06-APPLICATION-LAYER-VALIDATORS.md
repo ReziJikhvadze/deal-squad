@@ -156,6 +156,174 @@ public class JoinCampaignCommandValidator : AbstractValidator<JoinCampaignComman
 
 ---
 
+## File: `src/GroupBuy.Application/Validators/GetCampaignsQueryValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Campaigns.Queries;
+
+namespace GroupBuy.Application.Validators;
+
+public class GetCampaignsQueryValidator : AbstractValidator<GetCampaignsQuery>
+{
+    public GetCampaignsQueryValidator()
+    {
+        RuleFor(x => x.Page)
+            .GreaterThan(0).WithMessage("Page must be greater than 0");
+
+        RuleFor(x => x.PageSize)
+            .GreaterThan(0).WithMessage("Page size must be greater than 0")
+            .LessThanOrEqualTo(100).WithMessage("Page size must be 100 or less");
+
+        RuleFor(x => x.SearchTerm)
+            .MaximumLength(255).WithMessage("Search term must be less than 255 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.SearchTerm));
+    }
+}
+```
+
+---
+
+## File: `src/GroupBuy.Application/Validators/UpdateProfileCommandValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Auth.Commands;
+
+namespace GroupBuy.Application.Validators;
+
+public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileCommand>
+{
+    public UpdateProfileCommandValidator()
+    {
+        RuleFor(x => x.FullName)
+            .MaximumLength(255).WithMessage("Full name must be less than 255 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.FullName));
+
+        RuleFor(x => x.PhoneNumber)
+            .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format (use E.164 format)")
+            .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+    }
+}
+```
+
+---
+
+## File: `src/GroupBuy.Application/Validators/ForgotPasswordCommandValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Auth.Commands;
+
+namespace GroupBuy.Application.Validators;
+
+public class ForgotPasswordCommandValidator : AbstractValidator<ForgotPasswordCommand>
+{
+    public ForgotPasswordCommandValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email is required")
+            .EmailAddress().WithMessage("Invalid email format");
+    }
+}
+```
+
+---
+
+## File: `src/GroupBuy.Application/Validators/ResetPasswordCommandValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Auth.Commands;
+
+namespace GroupBuy.Application.Validators;
+
+public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordCommand>
+{
+    public ResetPasswordCommandValidator()
+    {
+        RuleFor(x => x.Token)
+            .NotEmpty().WithMessage("Reset token is required");
+
+        RuleFor(x => x.NewPassword)
+            .NotEmpty().WithMessage("Password is required")
+            .MinimumLength(8).WithMessage("Password must be at least 8 characters")
+            .Matches(@"[A-Z]").WithMessage("Password must contain at least one uppercase letter")
+            .Matches(@"[a-z]").WithMessage("Password must contain at least one lowercase letter")
+            .Matches(@"[0-9]").WithMessage("Password must contain at least one number")
+            .Matches(@"[\W_]").WithMessage("Password must contain at least one special character");
+    }
+}
+```
+
+---
+
+## File: `src/GroupBuy.Application/Validators/UpdateCampaignCommandValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Campaigns.Commands;
+
+namespace GroupBuy.Application.Validators;
+
+public class UpdateCampaignCommandValidator : AbstractValidator<UpdateCampaignCommand>
+{
+    public UpdateCampaignCommandValidator()
+    {
+        RuleFor(x => x.CampaignId)
+            .NotEmpty().WithMessage("Campaign ID is required");
+
+        RuleFor(x => x.Title)
+            .MaximumLength(255).WithMessage("Title must be less than 255 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.Title));
+
+        RuleFor(x => x.Description)
+            .MaximumLength(5000).WithMessage("Description must be less than 5000 characters")
+            .When(x => !string.IsNullOrWhiteSpace(x.Description));
+
+        RuleFor(x => x.ImageUrl)
+            .Must(BeAValidUrl).WithMessage("Invalid image URL")
+            .When(x => !string.IsNullOrWhiteSpace(x.ImageUrl));
+    }
+
+    private bool BeAValidUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult)
+            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+}
+```
+
+---
+
+## File: `src/GroupBuy.Application/Validators/PayFinalCommandValidator.cs`
+
+```csharp
+using FluentValidation;
+using GroupBuy.Application.Features.Participations.Commands;
+
+namespace GroupBuy.Application.Validators;
+
+public class PayFinalCommandValidator : AbstractValidator<PayFinalCommand>
+{
+    public PayFinalCommandValidator()
+    {
+        RuleFor(x => x.ParticipationId)
+            .NotEmpty().WithMessage("Participation ID is required");
+
+        RuleFor(x => x.PaymentProvider)
+            .IsInEnum().WithMessage("Invalid payment provider");
+
+        RuleFor(x => x.PaymentToken)
+            .NotEmpty().WithMessage("Payment token is required")
+            .MaximumLength(500).WithMessage("Payment token is too long");
+    }
+}
+```
+
+---
+
 ## File: `src/GroupBuy.Application/DependencyInjection.cs`
 
 ```csharp
