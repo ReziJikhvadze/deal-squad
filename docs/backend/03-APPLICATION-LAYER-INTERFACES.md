@@ -130,7 +130,9 @@ public interface IEmailService
     Task SendPasswordResetEmailAsync(string toEmail, string resetLink, CancellationToken cancellationToken = default);
     Task SendDepositConfirmationAsync(string toEmail, string campaignTitle, decimal amount, CancellationToken cancellationToken = default);
     Task SendCampaignSuccessNotificationAsync(string toEmail, string campaignTitle, decimal finalAmount, CancellationToken cancellationToken = default);
+    Task SendCampaignSuccessAsync(string toEmail, string campaignTitle, decimal finalAmount, CancellationToken cancellationToken = default);
     Task SendCampaignFailedNotificationAsync(string toEmail, string campaignTitle, decimal refundAmount, CancellationToken cancellationToken = default);
+    Task SendCampaignCancelledAsync(string toEmail, string campaignTitle, string reason, CancellationToken cancellationToken = default);
     Task SendFinalPaymentRequestAsync(string toEmail, string campaignTitle, decimal amount, DateTime deadline, CancellationToken cancellationToken = default);
     Task SendRefundProcessedAsync(string toEmail, string campaignTitle, decimal amount, CancellationToken cancellationToken = default);
 }

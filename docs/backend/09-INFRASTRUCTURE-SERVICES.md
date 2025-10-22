@@ -29,6 +29,18 @@ public class EmailService : IEmailService
             $"<h1>Payment Received</h1><p>Your deposit of ${amount} for '{campaignTitle}' has been confirmed.</p>", ct);
     }
 
+    public async Task SendCampaignSuccessAsync(string toEmail, string campaignTitle, decimal finalAmount, CancellationToken ct = default)
+    {
+        await SendEmailAsync(toEmail, "Campaign Successful!", 
+            $"<h1>Great News!</h1><p>The campaign '{campaignTitle}' has reached its target!</p><p>Final payment amount: ${finalAmount}</p><p>Please complete your final payment to receive your item.</p>", ct);
+    }
+
+    public async Task SendCampaignCancelledAsync(string toEmail, string campaignTitle, string reason, CancellationToken ct = default)
+    {
+        await SendEmailAsync(toEmail, "Campaign Cancelled", 
+            $"<h1>Campaign Cancelled</h1><p>The campaign '{campaignTitle}' has been cancelled.</p><p>Reason: {reason}</p><p>Your deposit will be refunded within 5-7 business days.</p>", ct);
+    }
+
     // Implement other email methods similarly...
 
     private async Task SendEmailAsync(string to, string subject, string htmlBody, CancellationToken ct)
