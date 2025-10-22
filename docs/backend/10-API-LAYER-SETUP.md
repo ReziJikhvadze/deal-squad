@@ -4,6 +4,7 @@
 
 ```csharp
 using GroupBuy.Application;
+using GroupBuy.Infrastructure;
 using GroupBuy.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,8 +27,8 @@ builder.Services.AddDbContext<GroupBuyDbContext>(options =>
 // Application layer
 builder.Services.AddApplication();
 
-// Infrastructure layer - Add all service registrations here
-// (repositories, payment providers, email service, etc.)
+// Infrastructure layer
+builder.Services.AddInfrastructure();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

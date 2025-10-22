@@ -126,6 +126,125 @@ public class TokenService : ITokenService
         return token;
     }
 
-    // Implement validation methods...
+    public async Task<bool> ValidatePasswordResetTokenAsync(string token, CancellationToken ct = default)
+    {
+        var tokens = await _unitOfWork.PasswordResetTokens.FindAsync(
+            t => t.Token == token && !t.Used && t.ExpiresAt > DateTime.UtcNow, ct);
+        return tokens.Any();
+    }
+
+    public async Task<Guid?> GetUserIdFromResetTokenAsync(string token, CancellationToken ct = default)
+    {
+        var tokens = await _unitOfWork.PasswordResetTokens.FindAsync(
+            t => t.Token == token && !t.Used && t.ExpiresAt > DateTime.UtcNow, ct);
+        var resetToken = tokens.FirstOrDefault();
+        return resetToken?.UserId;
+    }
+}
+```
+
+## Current User Service (HTTP Context)
+
+```csharp
+// src/GroupBuy.Infrastructure/Services/CurrentUserService.cs
+using GroupBuy.Application.Interfaces;
+using GroupBuy.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+
+namespace GroupBuy.Infrastructure.Services;
+
+public class CurrentUserService : ICurrentUserService
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public Guid? UserId
+    {
+        get
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User
+                .FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? _httpContextAccessor.HttpContext?.User
+                .FindFirst("sub")?.Value;
+
+            return userIdClaim != null && Guid.TryParse(userIdClaim, out var userId) 
+                ? userId 
+                : null;
+        }
+    }
+
+    public string? Email =>
+        _httpContextAccessor.HttpContext?.User
+            .FindFirst(ClaimTypes.Email)?.Value
+        ?? _httpContextAccessor.HttpContext?.User
+            .FindFirst("email")?.Value;
+
+    public AppRole? Role
+    {
+        get
+        {
+            var roleClaim = _httpContextAccessor.HttpContext?.User
+                .FindFirst(ClaimTypes.Role)?.Value;
+
+            return roleClaim != null && Enum.TryParse<AppRole>(roleClaim, out var role)
+                ? role
+                : null;
+        }
+    }
+
+    public bool IsAuthenticated =>
+        _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+
+    public bool IsAdmin => Role == AppRole.Admin;
+}
+```
+
+## Dependency Injection Registration
+
+Add this to your Infrastructure layer:
+
+```csharp
+// src/GroupBuy.Infrastructure/DependencyInjection.cs
+using GroupBuy.Application.Interfaces;
+using GroupBuy.Infrastructure.Data;
+using GroupBuy.Infrastructure.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Identity;
+using GroupBuy.Domain.Entities;
+
+namespace GroupBuy.Infrastructure;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
+    {
+        // HttpContextAccessor (required for CurrentUserService)
+        services.AddHttpContextAccessor();
+
+        // Services
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ICampaignStatusService, CampaignStatusService>();
+
+        // Unit of Work & Repositories
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Password Hasher
+        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+        // Payment Providers (if using multiple)
+        // services.AddScoped<IPaymentProvider, PayPalPaymentProvider>();
+        // services.AddScoped<IPaymentProvider, VisaMasterCardProvider>();
+
+        return services;
+    }
 }
 ```
