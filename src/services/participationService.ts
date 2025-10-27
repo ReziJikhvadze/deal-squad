@@ -4,14 +4,23 @@ import { Participation, CreateParticipationRequest } from '@/types/participation
 
 export const participationService = {
   async getUserParticipations(): Promise<Participation[]> {
-    return apiClient.get<Participation[]>('/participations/my');
+    const response = await apiClient.get<{ data: Participation[] }>('/participations/my-participations');
+    return response.data;
   },
 
   async joinCampaign(data: CreateParticipationRequest): Promise<Participation> {
-    return apiClient.post<Participation>('/participations', data);
+    const response = await apiClient.post<{ data: Participation }>('/participations/join', data);
+    return response.data;
   },
 
   async cancelParticipation(id: string): Promise<void> {
-    return apiClient.delete<void>(`/participations/${id}`);
+    await apiClient.post(`/participations/${id}/leave`, {});
+  },
+
+  async payFinal(participationId: string, paymentMethodId: string): Promise<void> {
+    await apiClient.post('/participations/pay-final', {
+      participationId,
+      paymentMethodId,
+    });
   },
 };

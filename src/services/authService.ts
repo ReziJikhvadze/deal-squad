@@ -4,15 +4,15 @@ import { LoginRequest, RegisterRequest, AuthResponse } from '@/types/auth';
 
 export const authService = {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-    apiClient.setToken(response.token);
-    return response;
+    const response = await apiClient.post<{ data: AuthResponse }>('/auth/login', credentials);
+    apiClient.setToken(response.data.token);
+    return response.data;
   },
 
   async register(data: RegisterRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/register', data);
-    apiClient.setToken(response.token);
-    return response;
+    const response = await apiClient.post<{ data: AuthResponse }>('/auth/register', data);
+    apiClient.setToken(response.data.token);
+    return response.data;
   },
 
   async logout() {
@@ -20,6 +20,15 @@ export const authService = {
   },
 
   async getCurrentUser() {
-    return apiClient.get<AuthResponse['user']>('/auth/me');
+    const response = await apiClient.get<{ data: AuthResponse['user'] }>('/auth/me');
+    return response.data;
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    await apiClient.post('/auth/forgot-password', { email });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await apiClient.post('/auth/reset-password', { token, newPassword });
   },
 };

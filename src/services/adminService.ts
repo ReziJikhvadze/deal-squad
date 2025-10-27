@@ -11,14 +11,25 @@ export interface AdminStats {
 
 export const adminService = {
   async getStats(): Promise<AdminStats> {
-    return apiClient.get<AdminStats>('/admin/stats');
+    const response = await apiClient.get<{ data: AdminStats }>('/admin/dashboard-stats');
+    return response.data;
   },
 
   async getAllUsers(): Promise<any[]> {
-    return apiClient.get<any[]>('/admin/users');
+    const response = await apiClient.get<{ data: any[] }>('/admin/users');
+    return response.data;
   },
 
-  async updateUserRole(userId: string, role: string): Promise<void> {
-    return apiClient.put<void>(`/admin/users/${userId}/role`, { role });
+  async banUser(userId: string): Promise<void> {
+    await apiClient.post(`/admin/users/${userId}/ban`, {});
+  },
+
+  async unbanUser(userId: string): Promise<void> {
+    await apiClient.post(`/admin/users/${userId}/unban`, {});
+  },
+
+  async getAllPayments(): Promise<any[]> {
+    const response = await apiClient.get<{ data: any[] }>('/admin/payments');
+    return response.data;
   },
 };

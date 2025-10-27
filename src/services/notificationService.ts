@@ -14,18 +14,24 @@ export interface Notification {
 
 export const notificationService = {
   async getMyNotifications(): Promise<Notification[]> {
-    return apiClient.get<Notification[]>('/notifications');
+    const response = await apiClient.get<{ data: Notification[] }>('/notifications');
+    return response.data;
   },
 
   async markAsRead(id: string): Promise<void> {
-    return apiClient.post<void>(`/notifications/${id}/read`);
+    await apiClient.post(`/notifications/${id}/mark-read`, {});
   },
 
   async markAllAsRead(): Promise<void> {
-    return apiClient.post<void>('/notifications/read-all');
+    await apiClient.post('/notifications/mark-all-read', {});
   },
 
   async deleteNotification(id: string): Promise<void> {
-    return apiClient.delete<void>(`/notifications/${id}`);
+    await apiClient.delete(`/notifications/${id}`);
+  },
+
+  async getUnreadCount(): Promise<number> {
+    const response = await apiClient.get<{ data: { count: number } }>('/notifications/unread-count');
+    return response.data.count;
   },
 };
