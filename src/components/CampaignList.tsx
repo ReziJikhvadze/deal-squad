@@ -78,7 +78,8 @@ export function CampaignList({ campaigns, onViewDetails }: CampaignListProps) {
   const filteredCampaigns = campaigns.filter(campaign => {
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           campaign.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || campaign.status === filterStatus;
+    const campaignStatus = campaign.status.toLowerCase();
+    const matchesStatus = filterStatus === 'all' || campaignStatus === filterStatus;
     const campaignCategory = getCampaignCategory(campaign);
     const matchesCategory = selectedCategory === 'all' || campaignCategory === selectedCategory;
     return matchesSearch && matchesStatus && matchesCategory;
@@ -103,9 +104,16 @@ export function CampaignList({ campaigns, onViewDetails }: CampaignListProps) {
   });
 
   // Get ending soon campaigns (active campaigns with <= 3 days left)
-  const endingSoonCampaigns = campaigns.filter(
-    c => c.status === 'active' && c.daysLeft > 0 && c.daysLeft <= 3
-  ).sort((a, b) => a.daysLeft - b.daysLeft);
+  const endingSoonCampaigns = campaigns.filter(c => {
+    const status = c.status.toLowerCase();
+    const endDate = new Date(c.endDate);
+    const daysLeft = c.daysLeft || Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+    return status === 'active' && daysLeft > 0 && daysLeft <= 3;
+  }).sort((a, b) => {
+    const aDays = a.daysLeft || 0;
+    const bDays = b.daysLeft || 0;
+    return aDays - bDays;
+  });
 
   const activeFilterCount = [
     filterStatus !== 'all' ? 1 : 0,
@@ -357,13 +365,13 @@ export function CampaignList({ campaigns, onViewDetails }: CampaignListProps) {
           <Card className="p-4">
             <p className="text-sm text-gray-600 mb-1">Active Now</p>
             <p className="text-2xl text-blue-600">
-              {campaigns.filter(c => c.status === 'active').length}
+              {campaigns.filter(c => c.status.toLowerCase() === 'active').length}
             </p>
           </Card>
           <Card className="p-4">
             <p className="text-sm text-gray-600 mb-1">Successful</p>
             <p className="text-2xl text-green-600">
-              {campaigns.filter(c => c.status === 'successful').length}
+              {campaigns.filter(c => c.status.toLowerCase() === 'successful').length}
             </p>
           </Card>
           <Card className="p-4">

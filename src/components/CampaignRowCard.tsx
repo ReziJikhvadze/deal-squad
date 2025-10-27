@@ -69,7 +69,7 @@ export function CampaignRowCard({ campaign, onViewDetails, featured = false }: C
           {/* Status Badge */}
           <div className="absolute top-3 right-3 z-10">
             <Badge className="bg-white/95 backdrop-blur-sm text-blue-600 hover:bg-white shadow-lg text-xs py-0.5">
-              {campaign.status === 'active' ? '✅ Active' : campaign.status === 'successful' ? '🎉 Success' : '❌ Failed'}
+              {campaign.status.toLowerCase() === 'active' ? '✅ Active' : campaign.status.toLowerCase() === 'successful' ? '🎉 Success' : '❌ Failed'}
             </Badge>
           </div>
 
