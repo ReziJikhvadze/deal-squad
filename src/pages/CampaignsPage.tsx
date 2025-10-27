@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { campaignService } from '@/services/campaignService';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { CampaignGrid } from '@/components/CampaignGrid';
+import { CampaignList } from '@/components/CampaignList';
 import { LoginModal } from '@/components/auth/LoginModal';
 import { SignupModal } from '@/components/auth/SignupModal';
 import { ResetPasswordModal } from '@/components/auth/ResetPasswordModal';
@@ -48,15 +48,9 @@ export function CampaignsPage() {
         onSignupClick={handleSignupClick}
       />
 
-      <main className="flex-1 container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Browse Campaigns</h1>
-          <p className="text-muted-foreground">Discover amazing group buying opportunities</p>
-        </div>
-
-        <CampaignGrid 
-          campaigns={campaigns} 
-          isLoading={isLoading}
+      <main className="flex-1">
+        <CampaignList 
+          campaigns={campaigns}
           onViewDetails={(id) => navigate(`/campaigns/${id}`)}
         />
       </main>
